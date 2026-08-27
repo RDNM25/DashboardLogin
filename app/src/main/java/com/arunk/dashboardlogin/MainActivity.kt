@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = "login"
                 ) {
-                    // Halaman 1: Logi
+                    // Halaman 1:
                     composable("login") {
                         Loginscreen(
                             onLoginSuccess = {
