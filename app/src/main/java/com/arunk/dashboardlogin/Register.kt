@@ -1,7 +1,7 @@
 package com.arunk.dashboardlogin
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -26,29 +24,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.arunk.dashboardlogin.ui.theme.BrandRed
-import androidx.compose.material3.TextButton
-import androidx.compose.foundation.Image
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 
 @Composable
-fun Loginscreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    onBackToLogin: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
     Column(
@@ -60,7 +59,7 @@ fun Loginscreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(290.dp)
+                .height(285.dp)
                 .background(
                     color = BrandRed,
                     shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp)
@@ -73,22 +72,22 @@ fun Loginscreen(
                     contentDescription = "App logo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(170.dp)
-                        .clip(RoundedCornerShape(22.dp))
+                        .size(180.dp)
+                        .clip(RoundedCornerShape(20.dp))
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "Welcome Back",
-                    style = MaterialTheme.typography.headlineLarge,
+                    text = "Create Account",
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Sign in to continue",
+                    text = "Sign up to get started",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                 )
@@ -100,7 +99,7 @@ fun Loginscreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 28.dp)
-                .padding(top = 40.dp),
+                .padding(top = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
@@ -108,9 +107,6 @@ fun Loginscreen(
                 onValueChange = { username = it },
                 label = { Text("Username") },
                 singleLine = true,
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = null)
-                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -150,6 +146,35 @@ fun Loginscreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirm Password") },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Lock, contentDescription = null)
+                },
+                trailingIcon = {
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(
+                            imageVector = if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = BrandRed,
+                    focusedLabelColor = BrandRed,
+                    cursorColor = BrandRed
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -160,15 +185,26 @@ fun Loginscreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    if (UserRepository.authenticate(username, password)) {
-                        errorMessage = ""
-                        onLoginSuccess()
-                    } else {
-                        errorMessage = "Username atau password salah"
+                    when {
+                        username.isBlank() || password.isBlank() -> {
+                            errorMessage = "Username dan password tidak boleh kosong"
+                        }
+                        password != confirmPassword -> {
+                            errorMessage = "Password tidak cocok"
+                        }
+                        else -> {
+                            val success = UserRepository.register(username, password)
+                            if (success) {
+                                errorMessage = ""
+                                onRegisterSuccess()
+                            } else {
+                                errorMessage = "Username sudah digunakan"
+                            }
+                        }
                     }
                 },
                 shape = RoundedCornerShape(16.dp),
@@ -181,17 +217,17 @@ fun Loginscreen(
                     .height(52.dp)
             ) {
                 Text(
-                    text = "LOGIN",
+                    text = "REGISTER",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            TextButton(onClick = onNavigateToRegister) {
+            TextButton(onClick = onBackToLogin) {
                 Text(
-                    text = "Don't have an account? Register",
+                    text = "Already have an account? Login",
                     color = BrandRed
                 )
             }
