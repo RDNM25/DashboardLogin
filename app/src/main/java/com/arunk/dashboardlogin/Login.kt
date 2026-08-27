@@ -22,7 +22,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-
 fun Loginscreen(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -47,7 +46,6 @@ fun Loginscreen(onLoginSuccess: () -> Unit) {
             onValueChange = { username = it },
             label = { Text("username") },
             modifier = Modifier.fillMaxWidth()
-
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -59,29 +57,30 @@ fun Loginscreen(onLoginSuccess: () -> Unit) {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(20.dp))
+
         Button(
             onClick = {
                 if (username == "admin" && password == "123") {
                     errorMessage = ""
                     onLoginSuccess()
                 } else {
-                    errorMessage = "usernam atau password salah"
+                    errorMessage = "Username atau password salah"
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-
             Text("LOGIN")
+        }
 
+        if (errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (errorMessage.isNotEmpty()) {
-                Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
